@@ -3,7 +3,7 @@
 
 # ### Import and Clean Data Script
 
-# In[ ]:
+# In[67]:
 
 
 import os
@@ -12,6 +12,7 @@ import glob
 import json
 import pickle
 
+import geopandas as gp
 import pandas as pd
 import numpy as np
 
@@ -21,7 +22,7 @@ from os import sep
 
 # #### Import data
 
-# In[ ]:
+# In[2]:
 
 
 # Working directory
@@ -30,48 +31,29 @@ cwd = f"C:{sep}Users{sep}ltswe{sep}Dropbox{sep}Oxford{sep}Thesis"
 data_dir = "D:"
 
 
-# In[ ]:
+# In[172]:
 
 
-# Create list of the JSONs that will need to be loaded in 
-# Glob.glob creates a list of all the files that end in .json in the directories/sub-directories of raw_tweets
-# The rest of the command filters out jsons that end in 00000.json since those represent meta counts and not actual tweets
+# Restructure JSONs into JSOLs (where each line = one tweet)
 json_list = [j for j in glob.glob(f'{data_dir}{sep}raw_tweets{sep}**{sep}*.json', recursive=True)
              if j[-10:] != '00000.json']
-len(json_list)
+test_json = json_list[2]
+temp_json = json.load(open(test_json))
+# Turn JSON into JSOl where key =  by using json['data']
+# then allocate to census tract using shape files & multiprocessing (one core for each month-year)
 
 
-# In[ ]:
+# In[176]:
 
 
-# Turn into pandas dataframe using pd.concat
-# Commence with blank dataframe
-raw_df = pd.DataFrame()
-for j in json_list:
-    temp_json = json.load(open(j))
-    temp_df = pd.json_normalize(temp_json['data'])
-    raw_df = pd.concat((raw_df, temp_df))
+temp_json2 = temp_json['data']
 
 
-# In[ ]:
+# In[188]:
 
 
-# # Pickle the raw data 
-raw_tweets_pickle = open(f"{data_dir}{sep}pickle{sep}raw_tweets_df.pickle", "wb")
-pickle.dump(raw_df, raw_tweets_pickle)
-
-
-# In[ ]:
-
-
-# Bring in pickled data
-raw_df = pickle.load(open(f"{data_dir}{sep}pickle{sep}raw_tweets_df.pickle", "rb"))
-
-
-# In[ ]:
-
-
-raw_df
+test_dict = {temp_json2[i]['id']:temp_json2[i] for i in range(len(temp_json2))}
+# test_dict
 
 
 # In[ ]:
@@ -166,30 +148,70 @@ nyc_crime_pickle = open(f"{data_dir}{sep}pickle{sep}nyc_crime.pickle", "wb")
 pickle.dump(nyc_crime, nyc_crime_pickle)
 
 
+# In[82]:
+
+
+# Bring in HUD vacant addresses data
+# Create list of the excel files that will need to be loaded in 
+# Glob.glob creates a list of all the files that end in .xlsx in the directory of HUD vacant data
+# The rest of the command filters out jsons that end in 00000.json since those represent meta counts and not actual tweets
+hud_list = [j for j in glob.glob(f'{data_dir}{sep}hud_vacant_data{sep}*.csv')]
+
+
+# In[117]:
+
+
+hud_df = pd.DataFrame()
+for file in hud_list:
+    temp_file = pd.read_csv(file, sep = None, engine='python')
+#   Using title of the file, create a column for the year & month/quarter
+    temp_file['year'] = ["20"+file[32:34] for i in range(temp_file.shape[0])]
+    temp_file['month'] = [file[28:30] for i in range(temp_file.shape[0])]
+    hud_df = hud_df.append(temp_file).reset_index(drop=True)
+
+
+# In[165]:
+
+
+# Create a FIPS code variable that is equal to the string of geoid 
+# (note that b/c it's in integers, we need to re-add leading zero for states with fips codes < 10) 
+hud_df['fips_code'] = hud_df["GEOID"].apply(lambda x: ("0" + str(x))[-11:])
+
+# Create file with only NY 
+ny_hud = hud_df[hud_df['fips_code'].apply(lambda x: x[0:2] == "36")].reset_index(drop=True)
+
+# Pickle ny hug file
+nyc_hud_pickle = open(f"{data_dir}{sep}pickle{sep}nyc_hud.pickle", "wb")
+pickle.dump(ny_hud, nyc_hud_pickle)
+
+
+# In[166]:
+
+
+# Unpickle ny hud
+ny_hud = pickle.load(open(f"{data_dir}{sep}pickle{sep}nyc_hud.pickle", "rb"))
+
+
+# In[167]:
+
+
+ny_hud
+
+
+# In[68]:
+
+
+temp_shp = gp.read_file(f"{data_dir}{sep}test{sep}tl_rd13_36001_edges.shp")
+
+
+# In[70]:
+
+
+temp_shp['geometry']
+
+
 # In[ ]:
 
 
-# Get latitude/longitude for data
-import requests
-import json
 
-def geocode_api(lat, long):
-    '''Given a latitude and longitude, this function uses the FCC geocoding API to return the corresponding census tract FIPS code'''
-    resp = requests.get("https://geo.fcc.gov/api/census/block/find?latitude=" + str(lat) + "&longitude=" + str(long) + "&format=json")
-    j = resp.json() #turn to JSON
-    fips = j['Block']["FIPS"] #get census tract number from JSON
-    return fips
-
-def geocode_df(df):
-    '''Given a dataframe with two cols with latitude and longitude coordinates, this function uses the geocode_api function to 
-    return a list that equals the census tract FIPS code for those lat/long coords'''
-    fips_list = []
-    lat_col = df.columns.get_loc("latitude")
-    long_col = df.columns.get_loc("longitude")
-    for row in range(df.shape[0]): #run through every row of the data frame
-        lat = df.iloc[row, lat_col] #get latitude coordinate for this listing
-        long = df.iloc[row, long_col] #get longitude coor for this listing
-        fips = geocode_api(lat, long) #get fips code for listing
-        fips_list.append(fips)
-    return fips_list
 
