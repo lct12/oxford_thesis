@@ -7,7 +7,7 @@ First coined to describe the process of “invasion” of working-class neighbou
 ## Description of Contents
 `thesis.pdf` is my full dissertation.
 
-The other files is the codebase for the project. In order, the files are the following:
+The other files make up most of the codebase for the project. In order, the files are the following:
 1. `twitter_api_search_q1.py` and `twitter_api_search_q2.py`: these files query the Twitter API for the data used in the dissertation (I queried twice)
 2. `clean_data.ipynb`: this file imports and cleans most of the data used (including the Twitter data from the previous step)  
 3. `determine_labels.ipynb`: this file creates the outcome gentrification variable using Census data
