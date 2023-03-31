@@ -7,7 +7,7 @@
 # #### Created: 29/07/2021
 # #### Last updated: 29/07/2021
 
-# ###### File description: This file preprocesses the full training sample
+# ###### File description: This file preprocesses the validation and/or test samples
 # Designed to be run on the server
 # 
 
