@@ -1,0 +1,18 @@
+# oxford_thesis
+My master's dissertation at Oxford University, which was entitled, "Developing an Early-Warning Gentrification System with Machine Learning." The dissertation received a grade of 75 (a Distinction). 
+
+## Abstract 
+First coined to describe the process of “invasion” of working-class neighbour- hoods in London by the middle class, gentrification has been thoroughly studied in the social sciences ever since. This phenomenon involves two essential parts: a ‘class-based colonization’ of inexpensive neighbourhoods and reinvestment in housing stock. While scholars disagree about whether displacement represents a fundamental part of gentrification, it is certainly a potential – and important – consequence. Residents may have to choose between the negative impacts of displacement or spending an increasingly higher share of their income on hous- ing; understanding the dynamics of gentrification and which neighbourhoods are likely to go through the process may aid governments in mitigating the nega- tive impacts of the process. However, most traditional measures of gentrification are collected too slowly to be helpful to policymakers before it is too late. This study aimed to build an ‘early-warning gentrification system’ using data from Twitter and other sources accessible to policymakers, including 311 complaints, crime rates, and address vacancies or changes, in addition to socioeconomic fea- tures commonly used in past attempts to forecast gentrification, to predict which census tracts would gentrify from a set of 405 eligible tracts in NYC between 2010-2018. From Twitter, I extracted both structured and unstructured features. Using a Mallet LDA topic modeller, I estimated the probability that the tweets in a given month-year-census tract matched the topics learned by the model. I then built random forest and logistic regression models that were tuned using tenfold cross-validation to predict gentrification. The full model performed the best, greatly improving on the model with non-Twitter features, the baseline model, and random chance. An investigation of the importance of the features in the model also revealed links between gentrification and certain topics, such as employment, politics, sports, or the use of slang words.
+
+## Description of Contents
+thesis.pdf is my full dissertation
+
+The other files is the codebase for the project. In order, the files are the following:
+1. `twitter_api_search_q1.py` and `twitter_api_search_q2.py`: these files query the Twitter API for the data used in the dissertation (I queried twice)
+2. `clean_data.ipynb`: this file imports and cleans most of the data used (including the Twitter data from the previous step)  
+3. `determine_labels.ipynb`: this file creates the outcome gentrification variable using Census data
+4. `extract_features_twitter.ipynb` and `extract_features_nontwitter.ipynb`: these files turn the data preprocessed in step 2 into features for the models
+5. `preprocess_full_sample.py` & `preprocess_test_val_tweets.py`: These files preprocess/create the full training sample and validation and test samples respectively (designed to be run in concurrence with the prior step) and create the corpuses used in the following steps. 
+6. `train_lda_models_full_sample.py` This file filters the corpuses and trains the Mallet LDA model on the full preprocessed twitter sample 
+7. `extract_topic_distribution.py`: Using the model from the previous step, this file extract the topic distributions for each document
+8. `create_model`.py: This file trains the full machine learning classifier, using the features created in all the above steps, and validates/tests it on the validation/test samples.  
