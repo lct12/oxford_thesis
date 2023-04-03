@@ -15,4 +15,4 @@ The other files make up most of the codebase for the project. In order, the file
 5. `preprocess_full_sample.py` & `preprocess_test_val_tweets.py`: These files preprocess/create the full training sample and validation and test samples respectively (designed to be run in concurrence with the prior step) and create the corpuses used in the following steps. 
 6. `train_lda_models_full_sample.py` This file filters the corpuses and trains the Mallet LDA model on the full preprocessed twitter sample 
 7. `extract_topic_distribution.py`: Using the model from the previous step, this file extract the topic distributions for each document
-8. `create_model`.py: This file trains the full machine learning classifier, using the features created in all the above steps, and validates/tests it on the validation/test samples.  
+8. `create_model.py`: This file trains the full machine learning classifier, using the features created in all the above steps, and validates/tests it on the validation/test samples.  
